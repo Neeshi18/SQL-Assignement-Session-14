@@ -1,0 +1,81 @@
+Use food_delivery_db;
+ALTER TABLE Orders
+ADD order_date DATE;
+UPDATE Orders SET order_date='2026-07-01' WHERE order_id=1;
+UPDATE Orders SET order_date='2026-07-02' WHERE order_id=2;
+UPDATE Orders SET order_date='2026-07-03' WHERE order_id=3;
+UPDATE Orders SET order_date='2026-07-04' WHERE order_id=4;
+SELECT
+    order_id,
+    user_id,
+    order_date,
+    amount,
+    ROW_NUMBER() OVER (
+        PARTITION BY user_id
+        ORDER BY order_date DESC
+    ) AS Row_Num
+FROM Orders;
+Use music_streaming_db;
+ALTER TABLE Songs
+ADD streams INT;
+UPDATE Songs SET streams = 900000 WHERE song_id = 1;
+UPDATE Songs SET streams = 750000 WHERE song_id = 2;
+UPDATE Songs SET streams = 850000 WHERE song_id = 3;
+UPDATE Songs SET streams = 650000 WHERE song_id = 4;
+UPDATE Songs SET streams = 500000 WHERE song_id = 5;
+SELECT
+    song_id,
+    song_name,
+    artist_name,
+    streams,
+    RANK() OVER (
+        PARTITION BY artist_name
+        ORDER BY streams DESC
+    ) AS Song_Rank
+FROM Songs;
+ALTER TABLE Movies
+ADD rating DECIMAL(3,1);
+UPDATE Movies SET rating = 4.8 WHERE movie_id = 1;
+UPDATE Movies SET rating = 4.5 WHERE movie_id = 2;
+UPDATE Movies SET rating = 4.2 WHERE movie_id = 3;
+UPDATE Movies SET rating = 4.9 WHERE movie_id = 4;
+UPDATE Movies SET rating = 4.6 WHERE movie_id = 5;
+SELECT
+    movie_id,
+    movie_name,
+    genre,
+    rating,
+    DENSE_RANK() OVER (
+        PARTITION BY genre
+        ORDER BY rating DESC
+    ) AS Movie_Rank
+FROM Movies;
+DROP TABLE Influencers;
+CREATE TABLE Influencers (
+    id INT PRIMARY KEY,
+    platform VARCHAR(50),
+    followers INT
+);
+INSERT INTO Influencers VALUES
+(1,'Instagram',950000),
+(2,'Instagram',850000),
+(3,'Instagram',780000),
+(4,'Instagram',650000),
+(5,'YouTube',1500000),
+(6,'YouTube',1300000),
+(7,'YouTube',1200000),
+(8,'YouTube',900000);
+SELECT *
+FROM
+(
+    SELECT
+        id,
+        platform,
+        followers,
+        ROW_NUMBER() OVER(
+            PARTITION BY platform
+            ORDER BY followers DESC
+        ) AS Row_Num
+    FROM Influencers
+) AS RankedInfluencers
+WHERE Row_Num <= 3;
